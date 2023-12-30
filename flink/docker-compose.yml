@@ -10,8 +10,8 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager     
     volumes:
-      - /home/alvaro/Desktop/CloudComputing/Proyects/flink/files:/files
-      - /home/alvaro/Desktop/CloudComputing/Proyects/flink/flink-examples:/flink-examples
+      - /home/alvaro/Desktop/CloudComputing/ApacheFlinkCode/flink/files:/files
+      - /home/alvaro/Desktop/CloudComputing/ApacheFlinkCode/flink/flink-examples:/flink-examples
 
   taskmanager:
     image: flink:1.17.1-scala_2.12-java11
@@ -25,6 +25,6 @@ services:
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 2 
     volumes:
-      - /home/alvaro/Desktop/CloudComputing/Proyects/flink/files:/files
+      - /home/alvaro/Desktop/CloudComputing/ApacheFlinkCode/flink/files:/files
 
 

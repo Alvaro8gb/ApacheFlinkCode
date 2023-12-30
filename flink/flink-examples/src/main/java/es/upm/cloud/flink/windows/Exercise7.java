@@ -21,6 +21,7 @@ package es.upm.cloud.flink.windows;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
@@ -40,6 +41,7 @@ import org.apache.flink.streaming.api.windowing.time.Time;
  * <p>If you change the name of the main class (with the public static void main(String[] args))
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
+
 public class Exercise7 {
 
     public static void main(String[] args) throws Exception {
@@ -57,6 +59,7 @@ public class Exercise7 {
                     public Tuple3<Long, String, Double> map(String in) throws Exception {
                         String[] fieldArray = in.split(",");
                         Tuple3<Long, String, Double> out = new Tuple3(Long.parseLong(fieldArray[0]), fieldArray[1], Double.parseDouble(fieldArray[2]));
+                        Thread.sleep(500); // Adding some delay
                         return out;
                     }
                 });
@@ -69,7 +72,7 @@ public class Exercise7 {
 
         // emit result
         if (params.has("output")) {
-            outStream.writeAsCsv(params.get("output"));
+            outStream.writeAsCsv(params.get("output"), FileSystem.WriteMode.OVERWRITE);
 
         } else {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
