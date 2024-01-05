@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package es.upm.cloud.flink.windows;
+package es.upm.cloud.flink.sensors.windows;
 
+import es.upm.cloud.flink.sensors.MyMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -26,51 +27,26 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
-import org.apache.flink.streaming.api.windowing.time.Time;
 
-/**
- * Skeleton for a Flink DataStream Job.
- *
- * <p>For a tutorial how to write a Flink application, check the
- * tutorials and examples on the <a href="https://flink.apache.org">Flink Website</a>.
- *
- * <p>To package your application into a JAR file for execution, run
- * 'mvn clean package' on the command line.
- *
- * <p>If you change the name of the main class (with the public static void main(String[] args))
- * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
- */
 
-public class Exercise7 {
+public class Exercise6b {
 
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // get input data
         DataStreamSource<String> text;
 
-        // read the text file from given input path
         text = env.readTextFile(params.get("input"));
         
-        //map to transform 1 event to 1 event (a tuple from csv line)
-        SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(
-                new MapFunction<String, Tuple3<Long, String, Double>>() {
-                    @Override
-                    public Tuple3<Long, String, Double> map(String in) throws Exception {
-                        String[] fieldArray = in.split(",");
-                        Tuple3<Long, String, Double> out = new Tuple3(Long.parseLong(fieldArray[0]), fieldArray[1], Double.parseDouble(fieldArray[2]));
-                        Thread.sleep(500); // Adding some delay
-                        return out;
-                    }
-                });
+        SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(new MyMapFunction());
 
         DataStream<Tuple3<Long, String, Double>> outStream = mapOut
                 .keyBy(1) // Key by the sensor name
-                .window(TumblingProcessingTimeWindows.of(Time.seconds(3)))
-                .min(2);
+                .countWindow(3) // Every 3 events
+                .sum(2); // Sum the temperatures within the window
 
+        // creates separate count-based windows for each sensor name, with each window containing three events specific to that sensor name.
 
-        // emit result
         if (params.has("output")) {
             outStream.writeAsCsv(params.get("output"), FileSystem.WriteMode.OVERWRITE);
 
@@ -78,7 +54,7 @@ public class Exercise7 {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
             text.print();
         }
-// execute program
-        env.execute("SourceSink");
+
+        env.execute("Ex6b");
     }
 }

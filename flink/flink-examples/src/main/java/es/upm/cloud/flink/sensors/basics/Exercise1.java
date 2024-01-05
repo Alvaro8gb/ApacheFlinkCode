@@ -1,17 +1,9 @@
-package es.upm.cloud.flink.basics;
+package es.upm.cloud.flink.sensors.basics;
 
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-
-/**
- * @author Ainhoa Azqueta Alzúaz (aazqueta@fi.upm.es)
- * @organization Universidad Politécnica de Madrid
- * @laboratory Laboratorio de Sistemas Distributidos (LSD)
- * @date 18/11/23
- **/
-
 
 public class Exercise1 {
     public static void main (String[] args) throws Exception {
@@ -27,7 +19,7 @@ public class Exercise1 {
           text.print();
         }
 
-          env.execute("SourceSink");
+          env.execute("Ex1");
     }
 
 }

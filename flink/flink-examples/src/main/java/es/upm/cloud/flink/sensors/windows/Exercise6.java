@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
-package es.upm.cloud.flink.windows;
+package es.upm.cloud.flink.sensors.windows;
 
+import es.upm.cloud.flink.sensors.MyMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -41,7 +42,7 @@ import org.apache.flink.streaming.api.windowing.triggers.CountTrigger;
  * <p>If you change the name of the main class (with the public static void main(String[] args))
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
-public class Exercise6b {
+public class Exercise6 {
 
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
@@ -52,23 +53,16 @@ public class Exercise6b {
         text = env.readTextFile(params.get("input"));
         
         //map to transform 1 event to 1 event (a tuple from csv line)
-        SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(
-                new MapFunction<String, Tuple3<Long, String, Double>>() {
-                    @Override
-                    public Tuple3<Long, String, Double> map(String in) throws Exception {
-                        String[] fieldArray = in.split(",");
-                        Tuple3<Long, String, Double> out = new Tuple3(Long.parseLong(fieldArray[0]), fieldArray[1], Double.parseDouble(fieldArray[2]));
-                        return out;
-                    }
-                });
+        SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(new MyMapFunction());
 
         DataStream<Tuple3<Long, String, Double>> outStream = mapOut
                 .keyBy(1) // Key by the sensor name
-                .countWindow(3) // Every 3 events
+                .window(GlobalWindows.create()) // Use global windows
+                .trigger(CountTrigger.of(3)) // Trigger the window when 3 elements are received
                 .sum(2); // Sum the temperatures within the window
 
-        // creates separate count-based windows for each sensor name, with each window containing three events specific to that sensor name.
-        //
+
+        //creates a global window for the entire stream, and it calculates the sum of temperatures for all sensor names combined every three events.
         // emit result
         if (params.has("output")) {
             outStream.writeAsCsv(params.get("output"), FileSystem.WriteMode.OVERWRITE);

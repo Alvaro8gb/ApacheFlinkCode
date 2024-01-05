@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package es.upm.cloud.flink.basics;
+package es.upm.cloud.flink.sensors.basics;
 
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -80,6 +80,6 @@ public class Exercise2 {
             text.print();
         }
 // execute program
-        env.execute("SourceSink");
+        env.execute("Ex2");
     }
 }

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package es.upm.cloud.flink.basics;
+package es.upm.cloud.flink.sensors.basics;
 
-import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.common.functions.FlatMapFunction;
+import es.upm.cloud.flink.exams.Jan2023A;
+import es.upm.cloud.flink.sensors.MyMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.tuple.Tuple;
@@ -29,7 +29,6 @@ import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.util.Collector;
 
 /**
  * Skeleton for a Flink DataStream Job.
@@ -45,45 +44,33 @@ import org.apache.flink.util.Collector;
  */
 public class Exercise4 {
 
+    public static class MyReduce implements ReduceFunction<Tuple3<Long, String, Double>>{
+
+        @Override
+        public Tuple3<Long, String, Double> reduce(Tuple3<Long, String, Double> t1, Tuple3<Long, String, Double> t2) throws Exception {
+            return new Tuple3<Long, String, Double>(t2.f0, t1.f1, t1.f2 +t2.f2);
+        }
+    }
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // get input data
         DataStreamSource<String> text;
 
-        // read the text file from given input path
         text = env.readTextFile(params.get("input"));
 
-        //map to transform 1 event to 2 event
-        text = env.readTextFile(params.get("input"));
-
-        //map to transform 1 event to 1 event (a tuple from csv line)
-        SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(
-                new MapFunction<String, Tuple3<Long, String, Double>>() {
-                    @Override
-                    public Tuple3<Long, String, Double> map(String in) throws Exception {
-                        String[] fieldArray = in.split(",");
-                        Tuple3<Long, String, Double> out = new Tuple3(Long.parseLong(fieldArray[0]), fieldArray[1], Double.parseDouble(fieldArray[2]));
-                        return out;
-                    }
-                });
+        SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(new MyMapFunction());
 
         KeyedStream<Tuple3<Long, String, Double>, Tuple> keyedStream = mapOut.keyBy(1);
 
-        SingleOutputStreamOperator<Tuple3<Long, String, Double>> outReduce = keyedStream.reduce(new ReduceFunction<Tuple3<Long, String, Double>>() {
-            @Override
-            public Tuple3<Long, String, Double> reduce(Tuple3<Long, String, Double> t1, Tuple3<Long, String, Double> t2)
-                    throws Exception {
-                return new Tuple3<Long, String, Double>(t2.f0, t1.f1, t1.f2 +t2.f2);
-            }});
+        SingleOutputStreamOperator<Tuple3<Long, String, Double>> outReduce = keyedStream.reduce(new MyReduce());
 
-        // emit result
         if (params.has("output")) {
                 outReduce.writeAsCsv(params.get("output"));
         } else {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
             text.print();
         }
-// execute program
-        env.execute("SourceSink");
+
+        env.execute("Ex4");
     }
 }

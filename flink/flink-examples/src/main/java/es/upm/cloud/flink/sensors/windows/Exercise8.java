@@ -16,8 +16,10 @@
  * limitations under the License.
  */
 
-package es.upm.cloud.flink.windows;
+package es.upm.cloud.flink.sensors.windows;
 
+import es.upm.cloud.flink.sensors.MyMapFunction;
+import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -28,11 +30,12 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.AscendingTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.assigners.GlobalWindows;
 import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.triggers.TriggerResult;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
+
+import java.time.Duration;
 
 /**
  * Skeleton for a Flink DataStream Job.
@@ -52,7 +55,8 @@ public class Exercise8 {
 
     // Custom AggregateFunction to calculate the average
 
-        public static class AverageAggregateFunction implements AggregateFunction< Tuple3<Long, String, Double>, Tuple3<String, Long, Double> , Tuple2<String, Double>>{
+        public static class AverageAggregateFunction implements AggregateFunction< Tuple3<Long, String, Double>,
+                Tuple3<String, Long, Double> , Tuple2<String, Double>>{
 
             @Override
             public Tuple3<String, Long, Double> createAccumulator() {
@@ -79,10 +83,10 @@ public class Exercise8 {
         public static class CustomEventTimeTrigger extends Trigger<Tuple3<Long, String, Double>, GlobalWindow> {
             @Override
             public TriggerResult onElement(Tuple3<Long, String, Double> element, long timestamp, GlobalWindow window, TriggerContext ctx) {
-                long currentTimestamp = ctx.getCurrentWatermark();
-                long nextFireTimestamp = currentTimestamp + 3000; // 3 seconds
 
-                if (timestamp >= nextFireTimestamp) {
+                long nextFireTimestamp = timestamp + 3000; // 3 seconds in milliseconds
+
+                if (nextFireTimestamp > ctx.getCurrentWatermark()) {
                     ctx.registerEventTimeTimer(nextFireTimestamp);
                 }
 
@@ -106,34 +110,30 @@ public class Exercise8 {
 
         }
 
-        public static class CustomWatermarkExtractor extends AscendingTimestampExtractor<Tuple3<Long, String, Double>> {
+        public static class  CustomWatermarkStrategy implements WatermarkStrategy<Tuple3<Long, String, Double>> {
 
             @Override
-            public long extractAscendingTimestamp(Tuple3<Long, String, Double> elem) {
-                return elem.f0*1000;
+            public WatermarkGenerator<Tuple3<Long, String, Double>> createWatermarkGenerator(WatermarkGeneratorSupplier.Context context) {
+                return new BoundedOutOfOrdernessWatermarks<>(Duration.ofSeconds(0));
             }
+            @Override
+            public SerializableTimestampAssigner<Tuple3<Long, String, Double>> createTimestampAssigner(TimestampAssignerSupplier.Context context) {
+                return (event, timestamp) -> event.f0 * 1000;
+            }
+
         }
         public static void main(String[] args) throws Exception {
-            final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
-            final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // get input data
+            final ParameterTool params = ParameterTool.fromArgs(args);
+            final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
             DataStreamSource<String> text;
 
-            // read the text file from given input path
             text = env.readTextFile(params.get("input"));
 
             //map to transform 1 event to 1 event (a tuple from csv line)
-            SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(
-                    new MapFunction<String, Tuple3<Long, String, Double>>() {
-                        @Override
-                        public Tuple3<Long, String, Double> map(String in) throws Exception {
-                            String[] fieldArray = in.split(",");
-                            Tuple3<Long, String, Double> out = new Tuple3(Long.parseLong(fieldArray[0]), fieldArray[1], Double.parseDouble(fieldArray[2]));
-                            return out;
-                        }
-                    });
+            SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(new MyMapFunction());
 
             DataStream<Tuple2<String, Double>> outStream = mapOut
-                    .assignTimestampsAndWatermarks(new CustomWatermarkExtractor())
+                    .assignTimestampsAndWatermarks(new CustomWatermarkStrategy())
                     .keyBy(1)
                     .window(GlobalWindows.create())
                     .trigger(new CustomEventTimeTrigger())
@@ -149,6 +149,6 @@ public class Exercise8 {
                 text.print();
             }
     // execute program
-            env.execute("SourceSink");
+            env.execute("Ex8");
         }
 }

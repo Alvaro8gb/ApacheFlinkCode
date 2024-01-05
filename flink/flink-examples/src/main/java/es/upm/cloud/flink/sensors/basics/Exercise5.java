@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package es.upm.cloud.flink.basics;
+package es.upm.cloud.flink.sensors.basics;
 
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
@@ -101,7 +101,7 @@ public class Exercise5 {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
             text.print();
         }
-// execute program
-        env.execute("SourceSink");
+
+        env.execute("Ex5");
     }
 }
