@@ -22,6 +22,7 @@ import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -74,10 +75,10 @@ public class Exercise2 {
 
         // emit result
         if (params.has("output")) {
-            filterOut.writeAsCsv(params.get("output"));
+            filterOut.writeAsCsv(params.get("output"), FileSystem.WriteMode.OVERWRITE);
         } else {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
-            text.print();
+            filterOut.print();
         }
 // execute program
         env.execute("Ex2");

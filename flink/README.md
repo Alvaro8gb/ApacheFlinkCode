@@ -30,7 +30,11 @@ docker exec -it flink_jobmanager_1 /bin/bash
  ```
 
 ## Ex2
-./bin/flink run -c es.upm.cloud.flink.sensors.basics.Exercise2 /flink-examples/target/flink-examples-0.1.jar --input /files/sensorData.csv --output /files/exercise2.csv
+```bash
+docker exec -it flink_jobmanager_1 /bin/bash
+./bin/flink run -c es.upm.cloud.flink.sensors.basics.Exercise2 /flink-examples/target/flink-examples-0.1.jar --input /files/sensors/sensorData.csv --output /files/sensors/exercise2.csv
+
+```
 
 ./bin/flink run -c es.upm.cloud.flink.sensors.basics.Exercise3 /flink-examples/target/flink-examples-0.1.jar --input /files/sensorData.csv --output /files/exercise3.csv
 
@@ -44,8 +48,20 @@ docker exec -it flink_jobmanager_1 /bin/bash
 
  ./bin/flink run -c es.upm.cloud.flink.sensors.windows.Exercise6b /flink-examples/target/flink-examples-0.1.jar --input /files/sensorData.csv --output /files/exercise6b.csv
 
-./bin/flink run -c es.upm.cloud.flink.sensors.windows.Exercise7 /flink-examples/target/flink-examples-0.1.jar --input /files/sensorData.csv --output /files/exercise7.csv
 
+## Ex7
+```bash
+docker exec -it flink_jobmanager_1 /bin/bash
+./bin/flink run -c es.upm.cloud.flink.sensors.windows.Exercise7 /flink-examples/target/flink-examples-0.1.jar --input /files/sensors/sensorData.csv --output /files/sensors/exercise7.csv
+
+```
+
+## Ex7b
+```bash
+docker exec -it flink_jobmanager_1 /bin/bash
+./bin/flink run -c es.upm.cloud.flink.sensors.windows.Exercise7b /flink-examples/target/flink-examples-0.1.jar --input /files/sensors/sensorData.csv --output /files/sensors/exercise7b.csv
+
+```
 
 ## Ex8
 ```bash

@@ -18,9 +18,7 @@
 
 package es.upm.cloud.flink.sensors.basics;
 
-import es.upm.cloud.flink.exams.Jan2023A;
 import es.upm.cloud.flink.sensors.MyMapFunction;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple3;
@@ -44,13 +42,14 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  */
 public class Exercise4 {
 
-    public static class MyReduce implements ReduceFunction<Tuple3<Long, String, Double>>{
+    public static class MyReduce implements ReduceFunction<Tuple3<Long, String, Double>> {
 
         @Override
         public Tuple3<Long, String, Double> reduce(Tuple3<Long, String, Double> t1, Tuple3<Long, String, Double> t2) throws Exception {
-            return new Tuple3<Long, String, Double>(t2.f0, t1.f1, t1.f2 +t2.f2);
+            return new Tuple3<Long, String, Double>(t2.f0, t1.f1, t1.f2 + t2.f2);
         }
     }
+
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // get input data
@@ -65,7 +64,7 @@ public class Exercise4 {
         SingleOutputStreamOperator<Tuple3<Long, String, Double>> outReduce = keyedStream.reduce(new MyReduce());
 
         if (params.has("output")) {
-                outReduce.writeAsCsv(params.get("output"));
+            outReduce.writeAsCsv(params.get("output"));
         } else {
             System.out.println("Printing result to stdout. Use --output to specify output path.");
             text.print();

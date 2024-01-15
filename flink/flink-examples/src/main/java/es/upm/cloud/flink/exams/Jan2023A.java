@@ -11,7 +11,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 public class Jan2023A {
 
-    public static class MyMap implements MapFunction<String, Tuple3<Long, Long, Double>>{
+    public static class MyMap implements MapFunction<String, Tuple3<Long, Long, Double>> {
 
         @Override
         public Tuple3<Long, Long, Double> map(String in) throws Exception {
@@ -21,12 +21,13 @@ public class Jan2023A {
         }
     }
 
-    public static class MyReduce implements ReduceFunction<Tuple3<Long, Long, Double>>{
+    public static class MyReduce implements ReduceFunction<Tuple3<Long, Long, Double>> {
         @Override
         public Tuple3<Long, Long, Double> reduce(Tuple3<Long, Long, Double> r1, Tuple3<Long, Long, Double> r2) throws Exception {
-            return new Tuple3<>(r1.f0, r1.f1, r1.f2+ r2.f2);
+            return new Tuple3<>(r1.f0, r1.f1, r1.f2 + r2.f2);
         }
     }
+
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // get input data
@@ -41,13 +42,13 @@ public class Jan2023A {
         mapOut.print();
 
         SingleOutputStreamOperator<Tuple3<Long, Long, Double>> outStream = mapOut.
-                countWindowAll(3,1).
+                countWindowAll(3, 1).
                 reduce(new MyReduce());
 
         //creates a global window for the entire stream, and it calculates the sum of temperatures for all sensor names combined every three events.
         // emit result
         if (params.has("output")) {
-            System.out.println("Writing in "+ params.get("output"));
+            System.out.println("Writing in " + params.get("output"));
             outStream.writeAsCsv(params.get("output"), FileSystem.WriteMode.OVERWRITE);
         } else {
             System.out.println("Printing result to stdout. Use --output to specify output path.");

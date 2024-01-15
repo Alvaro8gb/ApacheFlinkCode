@@ -36,7 +36,7 @@ public class Exercise5b {
         DataStreamSource<String> text;
 
         text = env.readTextFile(params.get("input"));
-        
+
         SingleOutputStreamOperator<Tuple3<Long, String, Double>> mapOut = text.map(new MyMapFunction());
 
         KeyedStream<Tuple3<Long, String, Double>, Tuple> keyedStream = mapOut.keyBy(1); // Group by sensor name

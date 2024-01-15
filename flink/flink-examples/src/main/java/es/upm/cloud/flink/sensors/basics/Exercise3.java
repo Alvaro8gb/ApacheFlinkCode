@@ -28,17 +28,18 @@ import org.apache.flink.util.Collector;
 
 public class Exercise3 {
 
-    public static class MyFlatMap implements FlatMapFunction<String, Tuple3<Long, String, Double>>{
+    public static class MyFlatMap implements FlatMapFunction<String, Tuple3<Long, String, Double>> {
 
         @Override
         public void flatMap(String in, Collector<Tuple3<Long, String, Double>> collector) throws Exception {
             String[] fieldArray = in.split(",");
             Tuple3<Long, String, Double> tuple = new Tuple3<>(Long.parseLong(fieldArray[0]), fieldArray[1], Double.parseDouble(fieldArray[2]));
-            Double f_degrees = (tuple.f2 * 9 /12) + 32;
+            Double f_degrees = (tuple.f2 * 9 / 12) + 32;
             collector.collect(tuple);
             collector.collect(new Tuple3<>(tuple.f0, tuple.f1, f_degrees));
         }
     }
+
     public static void main(String[] args) throws Exception {
         final ParameterTool params = ParameterTool.fromArgs(args); // set up the execution environment
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(); // get input data
