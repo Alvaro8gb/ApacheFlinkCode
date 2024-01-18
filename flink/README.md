@@ -84,8 +84,17 @@ docker exec -it flink_jobmanager_1 /bin/bash
  ./bin/flink run -c es.upm.cloud.flink.exams.Jan2023A /flink-examples/target/flink-examples-0.1.jar --input /files/exams/cars.csv --output /files/exams/jan2023.csv
 
 ```
+```bash
+docker exec -it flink_jobmanager_1 /bin/bash
+ ./bin/flink run -c es.upm.cloud.flink.exams.Jan2023B /flink-examples/target/flink-examples-0.1.jar --input /files/exams/cars.csv --output /files/exams/jan2023B.csv
 
+```
 
+```bash
+docker exec -it flink_jobmanager_1 /bin/bash
+ ./bin/flink run -c es.upm.cloud.flink.exams.Jan2023C /flink-examples/target/flink-examples-0.1.jar --input /files/exams/cars.csv --output /files/exams/jan2023C.csv
+
+```
 
 # Stop docker
 ```bash
